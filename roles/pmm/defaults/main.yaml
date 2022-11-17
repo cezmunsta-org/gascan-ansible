@@ -12,8 +12,8 @@
 # else if length is 1 then presume a token
 # else presume a username and password
 pmm_admin_credentials: "admin:admin"
-pmm_admin_set_password: true
-pmm_admin_token_validate: true
+pmm_admin_set_password: false
+pmm_admin_token_validate: false
 
 pmm_agent_token: ''
 pmm_agent_setup_flags:
@@ -22,9 +22,9 @@ pmm_agent_setup_flags:
   server-password: '{{ pmm_agent_token }}'
   server-insecure-tls: '{{ pmm_server_insecure }}'
 
-pmm_template_folder: ''
-pmm_alertmanager_contactpoint_uid: managedservice_contact_point
-pmm_templates_prefix: ''
+pmm_template_folder: '{{ pmm_default_template_folder | default("DefaultFolder")}}'
+pmm_alertmanager_contactpoint_uid: '{{ pmm_alertamanger_default_contactpoint_uid | default("DefaultContact_")}}'
+pmm_templates_prefix: '{{ pmm_default_templates_prefix | default("DefaultPrefix_")}}'
 pmm_alerting_runbook_path: 'https://localhost/runbooks/'              # path used in alert labels
 pmm_alertmanager_rule_periods:                                                                          # Used to set the "for" duration in rules
   interval_unit: m

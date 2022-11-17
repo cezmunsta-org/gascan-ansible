@@ -60,7 +60,7 @@
 
 - name: Set pmm_existing_alert_rules
   ansible.builtin.set_fact:
-    pmm_existing_alert_rules: '{{ pmm_get_alert_rules.json | json_query("ManagedService[*].rules[*].labels[].template_name")}}'
+    pmm_existing_alert_rules: '{{ pmm_get_alert_rules.json | json_query("` + pmm_template_folder + `[*].rules[*].labels[].template_name")}}'
 
 - ansible.builtin.include_tasks: alerting-contactpoint.yaml
 
