@@ -12,8 +12,8 @@
 # else if length is 1 then presume a token
 # else presume a username and password
 pmm_admin_credentials: "admin:admin"
-pmm_admin_set_password: false
-pmm_admin_token_validate: false
+pmm_admin_set_password: true
+pmm_admin_token_validate: true
 
 pmm_agent_token: ''
 pmm_agent_setup_flags:
