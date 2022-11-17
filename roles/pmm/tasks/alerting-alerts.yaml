@@ -1,3 +1,11 @@
+- name: Current Alert
+  ansible.builtin.debug:
+    msg: "{{ pmm_alert_item.name }}"
+
+- name: Set Alert Filter
+  ansible.builtin.set_fact:
+    pmm_alerting_filters: "{% if pmm_alert_item.name is defined and pmm_alert_item.name in pmm_alert_filters %}{{ pmm_alert_filters[pmm_alert_item.name][\"filters\"] | default([])}}{% else %}[]{% endif %}"
+
 - name: Create alerts
   ansible.builtin.uri:
     url: '{{ pmm_server_uri }}{{ pmm_api_alerting_rules_create }}'
@@ -7,12 +15,11 @@
     body: |
           {
             "custom_labels": {},
-            "filters": [],
-            "for": "60s",
-            "severity": "SEVERITY_CRITICAL",
+            "severity": "SEVERITY_{{ pmm_alert_item.severity | upper}}",
             "template_name": "{{ pmm_alert_item.name }}",
             "name": "{{ pmm_alert_item.name }}",
             "params": [],
+            "filters": {{ pmm_alerting_filters }},
             "group": "default-alert-group",
             "folder_uid": '{{ pmm_alerting_folder_uid }}'
           }

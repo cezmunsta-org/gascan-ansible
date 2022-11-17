@@ -7,7 +7,7 @@
     body: |
           {
             "disableResolveMessage": false,
-            "name": "{{ pmm_ms_folder }}_{{ item }}",
+            "name": "{{ pmm_template_folder }}_{{ item }}",
             "settings": {
             "integrationKey": "{{ pmm_pagerduty_token }}"
             },

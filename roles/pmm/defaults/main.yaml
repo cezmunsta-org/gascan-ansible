@@ -22,9 +22,28 @@ pmm_agent_setup_flags:
   server-password: '{{ pmm_agent_token }}'
   server-insecure-tls: '{{ pmm_server_insecure }}'
 
-pmm_ms_folder: 'ManagedService'
+pmm_template_folder: ''
 pmm_alertmanager_contactpoint_uid: managedservice_contact_point
+pmm_templates_prefix: ''
+pmm_alerting_runbook_path: 'https://localhost/runbooks/'              # path used in alert labels
+pmm_alertmanager_rule_periods:                                                                          # Used to set the "for" duration in rules
+  interval_unit: m
+  low_interval: 1
+  med_interval: 5
+  high_interval: 10
+  max_interval: 15
+pmm_alert_filters: []            # example: '{"VmalertAlertsError":{"filters":[{"label":"env","regexp":"staging","type":"MATCH"},{"label":"node_name","regexp":"db10","type":"MISMATCH"}]}}'
 
+## Alert Manager Rules Thresholds
+pmm_alertmanager_thr_PostgresqlCommitRateLow: 80
+pmm_alertmanager_thr_DiskSpaceCritical: 10
+pmm_alertmanager_thr_DiskSpaceWarning: 20
+pmm_alertmanager_thr_NodeIOUtilization: 950
+pmm_alertmanager_thr_CPUSaturationRDS: 0.8
+pmm_alertmanager_thr_StaleUpload: 93600                           # In default it is 26h (60*60*26)
+pmm_alertmanager_thr_StaleBackup: 93600                           # In default it is 26h (60*60*26)
+pmm_alertmanager_thr_StaleBackupLog: 3900                         # In default it is 65m (60*65)
+pmm_alertmanager_thr_StaleUploadLog: 3900
 
 # Currently, only tarball client installs will be performed.
 # OS packages and containers to be added later

@@ -27,6 +27,8 @@ pmm_grafana_alerting_notification: '{{ pmm_grafana_api }}/alertmanager/grafana/c
 
 pmm_setup_alerting: true
 notification_services: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
+# Available alert services ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
+pmm_enable_alerts_services: []
 
 pmm_payload_base:
    cluster: standalone

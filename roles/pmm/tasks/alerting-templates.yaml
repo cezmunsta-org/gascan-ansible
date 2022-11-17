@@ -1,3 +1,7 @@
+- name: Current Alert Template
+  ansible.builtin.debug:
+   msg: "{{ pmm_template_item.name }}"
+
 - name: Set pmm_alerting_template_body
   ansible.builtin.set_fact:
     pmm_alerting_template_body: "{{ new_item|default({}) | combine({ 'templates': [pmm_template_item] }) | to_yaml(indent=2) }}"
