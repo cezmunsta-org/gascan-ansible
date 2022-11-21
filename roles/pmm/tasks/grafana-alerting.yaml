@@ -44,6 +44,49 @@
   ansible.builtin.set_fact:
     pmm_alerting_folder_uid: '{{ pmm_alerting_get_folder_uid.json | json_query("[? title==`" + pmm_template_folder + "`].uid") | join(",") }}'
 
+- name: Get all templates
+  ansible.builtin.uri:
+    url: '{{ pmm_server_uri }}{{ pmm_api_alerting_templates_list }}'
+    method: POST
+    user: '{{ pmm_api_credentials[0] }}'
+    password: '{{ pmm_api_credentials[1] }}'
+    body: {"title":"{{ pmm_template_folder }}"}
+    force_basic_auth: yes
+    status_code:
+      - 200
+      - 409
+    body_format: json
+    validate_certs: '{{ pmm_server_insecure }}'
+    return_content: true
+  register: pmm_get_alert_templates
+
+- name: Set pmm_existing_alert_templates
+  ansible.builtin.set_fact:
+    pmm_existing_alert_templates: "{{ pmm_get_alert_templates.json | json_query('templates[*].name')}}"
+
+- ansible.builtin.include_tasks: alerting-contactpoint.yaml
+
+- ansible.builtin.include_tasks: alerting-notification.yaml
+
+- ansible.builtin.include_tasks: alerting-templates.yaml
+  vars:
+    pmm_template_item: '{{ item }}'
+  loop: "{{ pmm_alerting_templates['templates'] }}"
+
+- name: Delete Current Alert rules
+  ansible.builtin.uri:
+    url: '{{ pmm_server_uri }}{{ pmm_grafana_alerting_rules_delete }}'
+    method: DELETE
+    user: '{{ pmm_api_credentials[0] }}'
+    password: '{{ pmm_api_credentials[1] }}'
+    force_basic_auth: yes
+    status_code:
+      - 202
+    body_format: json
+    validate_certs: '{{ pmm_server_insecure }}'
+    return_content: true
+  when: pmm_delete_alert_rules
+
 - name: Get current alert rules
   ansible.builtin.uri:
     url: '{{ pmm_server_uri }}{{ pmm_grafana_alerting_rules_list }}'
@@ -60,21 +103,12 @@
 
 - name: Set pmm_existing_alert_rules
   ansible.builtin.set_fact:
-    pmm_existing_alert_rules: '{{ pmm_get_alert_rules.json | json_query("` + pmm_template_folder + `[*].rules[*].labels[].template_name")}}'
-
-- ansible.builtin.include_tasks: alerting-contactpoint.yaml
-
-- ansible.builtin.include_tasks: alerting-notification.yaml
-
-- ansible.builtin.include_tasks: alerting-templates.yaml
-  vars:
-    pmm_template_item: '{{ item }}'
-  loop: "{{ pmm_alerting_templates['templates'] }}"
+    pmm_existing_alert_rules: '{{ pmm_get_alert_rules.json | json_query(""+ pmm_template_folder + "[*].rules[*].annotations[].rule")}}'
 
 - ansible.builtin.include_tasks: alerting-alerts.yaml
   vars:
     pmm_alert_item: '{{ item }}'
-  loop: "{{ pmm_alerting_templates['templates'] | selectattr('labels.service','in', pmm_enable_alerts_services) }}"
+  loop: "{{ pmm_alert_list | from_json | selectattr('name','defined') | list }}"
 
 - name: Delete template file
   ignore_errors: yes

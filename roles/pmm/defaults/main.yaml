@@ -32,7 +32,6 @@ pmm_alertmanager_rule_periods:                                                  
   med_interval: 5
   high_interval: 10
   max_interval: 15
-pmm_alert_filters: []            # example: '{"VmalertAlertsError":{"filters":[{"label":"env","regexp":"staging","type":"MATCH"},{"label":"node_name","regexp":"db10","type":"MISMATCH"}]}}'
 
 ## Alert Manager Rules Thresholds
 pmm_alertmanager_thr_PostgresqlCommitRateLow: 80

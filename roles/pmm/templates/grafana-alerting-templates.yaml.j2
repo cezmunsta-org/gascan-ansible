@@ -17,9 +17,16 @@ templates:
    - name: {{ pmm_templates_prefix }}DiskSpaceWarning
      summary: {{ pmm_templates_prefix }}DiskSpaceWarning
      version: 1
-     expr: ((node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= {{ pmm_alertmanager_thr_DiskSpaceWarning }} and (ttf(node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"}[10d]) / (60*60*24)) < 10) or (node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= 5
+     expr: ((node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= [[ .threshold ]] and (ttf(node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"}[10d]) / (60*60*24)) < 10) or (node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= 5
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_DiskSpaceWarning }}
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#DiskSpaceWarning
@@ -30,11 +37,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}DiskSpaceCritical
-     expr: ((node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= {{ pmm_alertmanager_thr_DiskSpaceCritical }} and (ttf(node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"}[10d]) / (60*60*24)) < 10) or (node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= 5
+     expr: ((node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= [[ .threshold ]] and (ttf(node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"}[10d]) / (60*60*24)) < 10) or (node_filesystem_avail_bytes{fstype!~"^(tmpfs|fuse.*|rootfs|selinuxfs|autofs|rpc_pipefs)$"} * 100) / node_filesystem_size_bytes <= 5
      summary: {{ pmm_templates_prefix }}DiskSpaceCritical
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_DiskSpaceCritical }}
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#DiskSpaceCritical
@@ -45,11 +59,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeLowFreeMemory
-     expr: 100*(node_memory_availabe or (node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes))/node_memory_MemTotal_bytes < 8
+     expr: 100*(node_memory_availabe or (node_memory_MemFree_bytes+node_memory_Buffers_bytes+node_memory_Cached_bytes))/node_memory_MemTotal_bytes < [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeLowFreeMemory
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 8
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeLowFreeMemory
@@ -60,11 +81,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeLowFreeMemoryTrend
-     expr: mysql_global_status_uptime > 3600 and 100*(predict_linear(node_memory_MemAvailable_bytes[1h], 120*60) or (predict_linear(node_memory_MemFree_bytes[1h], 120*60) + predict_linear(node_memory_Buffers_bytes[1h], 120*60) + predict_linear(node_memory_Cached_bytes[1h], 120*60)))/node_memory_MemTotal_bytes < 5
+     expr: mysql_global_status_uptime > 3600 and 100*(predict_linear(node_memory_MemAvailable_bytes[1h], 120*60) or (predict_linear(node_memory_MemFree_bytes[1h], 120*60) + predict_linear(node_memory_Buffers_bytes[1h], 120*60) + predict_linear(node_memory_Cached_bytes[1h], 120*60)))/node_memory_MemTotal_bytes < [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeLowFreeMemoryTrend
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 5
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeLowFreeMemoryTrend
@@ -75,11 +103,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeIOUtilization
-     expr: rate(node_disk_io_time_ms[1m]) > {{ pmm_alertmanager_thr_NodeIOUtilization }}
+     expr: rate(node_disk_io_time_ms[1m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeIOUtilization
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: {{ pmm_alertmanager_thr_NodeIOUtilization }}
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeIOUtilization
@@ -90,11 +125,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeCpuUtilization
-     expr: (1-sum(rate(node_cpu_seconds_total{mode='idle'}[1m])) by (node_name)/count(node_cpu_seconds_total{mode='idle'}) by (node_name))*100 > 90
+     expr: (1-sum(rate(node_cpu_seconds_total{mode='idle'}[1m])) by (node_name)/count(node_cpu_seconds_total{mode='idle'}) by (node_name))*100 > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeCpuUtilization
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 90
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeCpuUtilization
@@ -105,11 +147,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeLoad
-     expr: max_over_time(node_load1[2m])  / on (node_name) (count(node_cpu_seconds_total{mode="idle"}) by (node_name)) > 20
+     expr: max_over_time(node_load1[2m])  / on (node_name) (count(node_cpu_seconds_total{mode="idle"}) by (node_name)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeLoad
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 20
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeLoad
@@ -120,11 +169,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}NodeNetworkErrors
-     expr: 100*sum(rate(node_network_transmit_errs_total[1m])+rate(node_network_receive_errs_total[1m])) by (node_name) / on (node_name) sum(rate(node_network_transmit_packets_total[1m])+rate(node_network_receive_packets_total[1m])) by (node_name) > 5
+     expr: 100*sum(rate(node_network_transmit_errs_total[1m])+rate(node_network_receive_errs_total[1m])) by (node_name) / on (node_name) sum(rate(node_network_transmit_packets_total[1m])+rate(node_network_receive_packets_total[1m])) by (node_name) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}NodeNetworkErrors
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 5
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#NodeNetworkErrors
@@ -135,11 +191,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}StaleBackup
-     expr: time() -  msp_backup_last_report_ts{type!~"Oplog|Binlogs"} > {{ pmm_alertmanager_thr_StaleBackup }} and on(type, alias) msp_backup_enabled == 1
+     expr: time() -  msp_backup_last_report_ts{type!~"Oplog|Binlogs"} > [[ .threshold ]] and on(type, alias) msp_backup_enabled == 1
      summary: {{ pmm_templates_prefix }}StaleBackup
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_StaleBackup }}
      labels:
         service: backup
         runbook: {{ pmm_alerting_runbook_path }}#StaleBackup
@@ -150,11 +213,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}StaleUpload
-     expr: time() - msp_upload_last_report_ts{type!~"Oplog|Binlogs"} > {{ pmm_alertmanager_thr_StaleUpload }} and on(type, alias) msp_upload_enabled == 1
+     expr: time() - msp_upload_last_report_ts{type!~"Oplog|Binlogs"} > [[ .threshold ]] and on(type, alias) msp_upload_enabled == 1
      summary: {{ pmm_templates_prefix }}StaleUpload
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_StaleUpload }}
      labels:
         service: backup
         runbook: {{ pmm_alerting_runbook_path }}#StaleUpload
@@ -165,11 +235,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}StaleUploadLog
-     expr: time() -  msp_upload_last_report_ts{type=~"Oplog|Binlogs"} > {{ pmm_alertmanager_thr_StaleUploadLog }} and on(type, alias) msp_upload_enabled == 1
+     expr: time() -  msp_upload_last_report_ts{type=~"Oplog|Binlogs"} > [[ .threshold ]] and on(type, alias) msp_upload_enabled == 1
      summary: {{ pmm_templates_prefix }}StaleUploadLog
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_StaleUploadLog }}
      labels:
         service: backup
         runbook: {{ pmm_alerting_runbook_path }}#StaleUploadLog
@@ -180,11 +257,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}StaleBackupLog
-     expr: time() -  msp_backup_last_report_ts{type=~"Oplog|Binlogs"} > {{ pmm_alertmanager_thr_StaleBackupLog }} and on(type, alias) msp_backup_enabled == 1
+     expr: time() -  msp_backup_last_report_ts{type=~"Oplog|Binlogs"} > [[ .threshold ]] and on(type, alias) msp_backup_enabled == 1
      summary: {{ pmm_templates_prefix }}StaleBackupLog
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_StaleBackupLog }}
      labels:
         service: backup
         runbook: {{ pmm_alerting_runbook_path }}#StaleBackupLog
@@ -210,11 +294,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}CPUSaturationRDS
-     expr: rate(aws_rds_cpu_credit_usage_average[5m]) > {{ pmm_alertmanager_thr_CPUSaturationRDS }}
+     expr: rate(aws_rds_cpu_credit_usage_average[5m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}CPUSaturationRDS
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_CPUSaturationRDS }}
      labels:
         service: generic
         runbook: {{ pmm_alerting_runbook_path }}#CPUSaturationRDS
@@ -225,11 +316,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLScrapingIssues
-     expr: rate(scrape_samples_scraped{service_type="mysql", job=~"mysqld_exporter_agent.*hr-5s"}[1m]) > 0.15
+     expr: rate(scrape_samples_scraped{service_type="mysql", job=~"mysqld_exporter_agent.*hr-5s"}[1m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLScrapingIssues
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0.15
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLScrapingIssues
@@ -255,11 +353,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTooManyConnections
-     expr: mysql_global_status_threads_connected / on (node_name) mysql_global_variables_max_connections * 100 > 95
+     expr: mysql_global_status_threads_connected / on (node_name) mysql_global_variables_max_connections * 100 > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTooManyConnections
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 95
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTooManyConnections
@@ -270,11 +375,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLWillOverloadConnectionsSoon
-     expr: (predict_linear(mysql_global_status_threads_connected[2m], 60 * 30) / on (node_name) mysql_global_variables_max_connections) * 100 > 90
+     expr: (predict_linear(mysql_global_status_threads_connected[2m], 60 * 30) / on (node_name) mysql_global_variables_max_connections) * 100 > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLWillOverloadConnectionsSoon
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 90
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLWillOverloadConnectionsSoon
@@ -285,11 +397,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTableLockWaitHigh
-     expr: (100 * mysql_global_status_table_locks_waited)/(mysql_global_status_table_locks_waited + mysql_global_status_table_locks_immediate) > 60
+     expr: (100 * mysql_global_status_table_locks_waited)/(mysql_global_status_table_locks_waited + mysql_global_status_table_locks_immediate) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTableLockWaitHigh
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 60
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTableLockWaitHigh
@@ -300,11 +419,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLInnoDBCheckpointAge
-     expr: 100*avg_over_time(mysql_global_status_innodb_checkpoint_age[1m])/mysql_global_status_innodb_checkpoint_max_age > 90
+     expr: 100*avg_over_time(mysql_global_status_innodb_checkpoint_age[1m])/mysql_global_status_innodb_checkpoint_max_age > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLInnoDBCheckpointAge
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 90
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLInnoDBCheckpointAge
@@ -315,11 +441,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLInnoDBFlushingSaturationCritical
-     expr: 100*rate(mysql_global_status_innodb_data_writes[30m]) / on (node_name) avg_over_time(mysql_global_variables_innodb_io_capacity_max[30m]) > 90
+     expr: 100*rate(mysql_global_status_innodb_data_writes[30m]) / on (node_name) avg_over_time(mysql_global_variables_innodb_io_capacity_max[30m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLInnoDBFlushingSaturationCritical
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 90
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLInnoDBFlushingSaturationCritical
@@ -330,11 +463,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTableOpen
-     expr: rate(mysql_global_status_open_tables[5m])/ on (node_name) mysql_global_variables_innodb_io_capacity > 0.3
+     expr: rate(mysql_global_status_open_tables[5m])/ on (node_name) mysql_global_variables_innodb_io_capacity > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTableOpen
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0.3
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTableOpen
@@ -345,11 +485,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTableOpenDefinition
-     expr: rate(mysql_global_status_opened_table_definitions[5m])/ on (node_name) mysql_global_variables_innodb_io_capacity > 0.15
+     expr: rate(mysql_global_status_opened_table_definitions[5m])/ on (node_name) mysql_global_variables_innodb_io_capacity > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTableOpenDefinition
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0.15
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTableOpenDefinition
@@ -360,11 +507,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLThreadCreate
-     expr: rate(mysql_global_status_threads_created[1m]) > 10
+     expr: rate(mysql_global_status_threads_created[1m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLThreadCreate
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A threshold configured per second
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 10
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLThreadCreate
@@ -375,11 +529,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLRowLockTime
-     expr: rate(mysql_global_status_innodb_row_lock_time[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > 150
+     expr: rate(mysql_global_status_innodb_row_lock_time[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLRowLockTime
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value of the maximum Row Lock Time.
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 150
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLRowLockTime
@@ -390,11 +551,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLThreadBlockedTime
-     expr: avg_over_time(mysql_info_schema_threads_seconds{state="waiting for lock"}[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > 0.1
+     expr: avg_over_time(mysql_info_schema_threads_seconds{state="waiting for lock"}[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLThreadBlockedTime
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0.1
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLThreadBlockedTime
@@ -405,11 +573,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLNumThreadBlocked
-     expr: avg_over_time(mysql_info_schema_threads_seconds{state="waiting for lock"}[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > 0.4
+     expr: avg_over_time(mysql_info_schema_threads_seconds{state="waiting for lock"}[1m])/on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLNumThreadBlocked
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0.4
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLNumThreadBlocked
@@ -420,11 +595,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTooManyRowsRead
-     expr: rate(mysql_global_status_innodb_row_ops_total{operation="read"}[5m]) / on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > 700000
+     expr: rate(mysql_global_status_innodb_row_ops_total{operation="read"}[5m]) / on (node_name) (count(node_cpu_seconds_total{mode='idle'}) by (node_name)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTooManyRowsRead
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value for rows read by MySQL
+           unit: "%"
+           type: float
+           range: [0, 10000000]
+           value: 700000
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTooManyRowsRead
@@ -435,11 +617,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLTooManyThreadsRunning
-     expr: (avg_over_time(mysql_global_status_threads_running[1m]) - 2) / on (node_name) count(node_cpu_seconds_total{mode="idle"}) by (node_name) > 3
+     expr: (avg_over_time(mysql_global_status_threads_running[1m]) - 2) / on (node_name) count(node_cpu_seconds_total{mode="idle"}) by (node_name) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLTooManyThreadsRunning
      version: 1
      for: {{ pmm_alertmanager_rule_periods.high_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 3
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLTooManyThreadsRunning
@@ -450,11 +639,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLQueryPileUp
-     expr: 100 * irate(mysql_global_status_threads_running[15s])/ on (node_name) min_over_time(mysql_global_status_threads_running[15s]) > 15
+     expr: 100 * irate(mysql_global_status_threads_running[15s])/ on (node_name) min_over_time(mysql_global_status_threads_running[15s]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLQueryPileUp
      version: 1
      for: {{ pmm_alertmanager_rule_periods.max_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 15
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLQueryPileUp
@@ -465,11 +661,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLReplicaLag
-     expr: max_over_time(mysql_slave_status_seconds_behind_master[15s]) - max_over_time(mysql_slave_status_sql_delay[15s]) > 120
+     expr: max_over_time(mysql_slave_status_seconds_behind_master[15s]) - max_over_time(mysql_slave_status_sql_delay[15s]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLReplicaLag
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 120
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLReplicaLag
@@ -510,11 +713,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLInnoDBFlushingSaturationWarning
-     expr: 100*rate(mysql_global_status_innodb_data_writes[5m])/ on (node_name) avg_over_time(mysql_global_variables_innodb_io_capacity_max[5m]) > 60
+     expr: 100*rate(mysql_global_status_innodb_data_writes[5m])/ on (node_name) avg_over_time(mysql_global_variables_innodb_io_capacity_max[5m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLInnoDBFlushingSaturationWarning
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 60
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLInnoDBFlushingSaturationWarning
@@ -540,11 +750,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLDeadlock
-     expr: rate(mysql_info_schema_innodb_metrics_lock_lock_deadlocks_total[1s])> 1
+     expr: rate(mysql_info_schema_innodb_metrics_lock_lock_deadlocks_total[1s])> [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLDeadlock
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 1
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLDeadlock
@@ -555,11 +772,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLAutoIncrementExhaustion
-     expr: (mysql_info_schema_auto_increment_column*100/mysql_info_schema_auto_increment_column_max) > 80
+     expr: (mysql_info_schema_auto_increment_column*100/mysql_info_schema_auto_increment_column_max) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MySQLAutoIncrementExhaustion
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 80
      labels:
         service: mysql
         runbook: {{ pmm_alerting_runbook_path }}#MySQLAutoIncrementExhaustion
@@ -705,11 +929,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbWTTicketUse
-     expr: mongodb_mongod_wiredtiger_concurrent_transactions_out_tickets > 10
+     expr: mongodb_mongod_wiredtiger_concurrent_transactions_out_tickets > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbWTTicketUse
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 10
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbWTTicketUse
@@ -720,11 +951,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbQueueHigh
-     expr: mongodb_mongod_global_lock_current_queue > 100
+     expr: mongodb_mongod_global_lock_current_queue > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbQueueHigh
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured maximum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 100
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbQueueHigh
@@ -735,11 +973,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbReplLag
-     expr: max(max(mongodb_mongod_replset_member_optime_date{state="PRIMARY"}) without (name, state) - min(mongodb_mongod_replset_member_optime_date{state="SECONDARY"}) without (name, state)) without (instance) > 200
+     expr: max(max(mongodb_mongod_replset_member_optime_date{state="PRIMARY"}) without (name, state) - min(mongodb_mongod_replset_member_optime_date{state="SECONDARY"}) without (name, state)) without (instance) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbReplLag
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 200
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbReplLag
@@ -750,11 +995,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbReplWindowLessThan10m
-     expr: (mongodb_mongod_replset_oplog_head_timestamp - mongodb_mongod_replset_oplog_tail_timestamp) < 600
+     expr: (mongodb_mongod_replset_oplog_head_timestamp - mongodb_mongod_replset_oplog_tail_timestamp) < [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbReplWindowLessThan10m
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 600
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbReplWindowLessThan10m
@@ -765,11 +1017,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbWTCheckpointTimeHigh
-     expr: rate(mongodb_mongod_wiredtiger_transactions_checkpoint_milliseconds_total{cluster="Dev Media"}[2m]) > 30000
+     expr: rate(mongodb_mongod_wiredtiger_transactions_checkpoint_milliseconds_total{cluster="Dev Media"}[2m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbWTCheckpointTimeHigh
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000000]
+           value: 30000
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbWTCheckpointTimeHigh
@@ -780,11 +1039,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodHighCursorCount
-     expr: sum(mongodb_mongod_metrics_cursor_open{state="total"} * on (instance) group_right mongodb_mongod_replset_my_name) by (cluster, set) > 300
+     expr: sum(mongodb_mongod_metrics_cursor_open{state="total"} * on (instance) group_right mongodb_mongod_replset_my_name) by (cluster, set) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodHighCursorCount
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 10000]
+           value: 300
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodHighCursorCount
@@ -795,11 +1061,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbWTCacheReadIntoFromDisk
-     expr: (mongodb_mongod_wiredtiger_cache_bytes_total{type="read"} - mongodb_mongod_wiredtiger_cache_bytes_total{type="read"} offset 1m) / 1024 / 1024 > 1024
+     expr: (mongodb_mongod_wiredtiger_cache_bytes_total{type="read"} - mongodb_mongod_wiredtiger_cache_bytes_total{type="read"} offset 1m) / 1024 / 1024 > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}MongodbWTCacheReadIntoFromDisk
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 10000]
+           value: 1024
      labels:
         service: mongodb
         runbook: {{ pmm_alerting_runbook_path }}#MongodbWTCacheReadIntoFromDisk
@@ -840,11 +1113,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlReplicationLag
-     expr: pg_replication_lag > 120 and ON(instance) pg_replication_is_replica == 1
+     expr: pg_replication_lag > [[ .threshold ]] and ON(instance) pg_replication_is_replica == 1
      summary: {{ pmm_templates_prefix }}PostgresqlReplicationLag
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 10000]
+           value: 120
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlReplicationLag
@@ -855,11 +1135,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlTooManyConnections
-     expr: sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) > pg_settings_max_connections * 0.8
+     expr: sum by (datname) (pg_stat_activity_count{datname!~"template.*|postgres"}) > pg_settings_max_connections * [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlTooManyConnections
      version: 1
      for:  {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1]
+           value: 0.8
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlTooManyConnections
@@ -870,11 +1157,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlDeadLocks
-     expr: increase(pg_stat_database_deadlocks{datname!~"template.*|postgres"}[1m]) > 5
+     expr: increase(pg_stat_database_deadlocks{datname!~"template.*|postgres"}[1m]) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlDeadLocks
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 5
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlDeadLocks
@@ -885,11 +1179,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlSlowQueries
-     expr: pg_slow_queries > 0
+     expr: pg_slow_queries > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlSlowQueries
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: 0
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlSlowQueries
@@ -900,11 +1201,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlCommitRateLow
-     expr: round(100 * pg_stat_database_xact_commit/(pg_stat_database_xact_commit+pg_stat_database_xact_rollback),2) < {{ pmm_alertmanager_thr_PostgresqlCommitRateLow }}
+     expr: round(100 * pg_stat_database_xact_commit/(pg_stat_database_xact_commit+pg_stat_database_xact_rollback),2) < [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlCommitRateLow
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 100]
+           value: {{ pmm_alertmanager_thr_PostgresqlCommitRateLow }}
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlCommitRateLow
@@ -915,11 +1223,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlTooManyLocksAcquired
-     expr: ((sum (pg_locks_count)) / (pg_settings_max_locks_per_transaction * pg_settings_max_connections)) > 0.20
+     expr: ((sum (pg_locks_count)) / (pg_settings_max_locks_per_transaction * pg_settings_max_connections)) > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlTooManyLocksAcquired
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A percentage from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1]
+           value: 0.20
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlTooManyLocksAcquired
@@ -945,11 +1260,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlIdleInTransaction
-     expr: pg_stat_activity_max_tx_duration{state="idle in transaction"} > 300
+     expr: pg_stat_activity_max_tx_duration{state="idle in transaction"} > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlIdleInTransaction
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 300
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlIdleInTransaction
@@ -960,11 +1282,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlUpTime
-     expr: pg_postmaster_uptime_seconds < 300
+     expr: pg_postmaster_uptime_seconds < [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlUpTime
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: critical
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 300
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlUpTime
@@ -975,11 +1304,18 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlTransactionDuration
-     expr: pg_stat_activity_max_tx_duration > 420
+     expr: pg_stat_activity_max_tx_duration > [[ .threshold ]]
      summary: {{ pmm_templates_prefix }}PostgresqlTransactionDuration
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
      severity: warning
+     params:
+         - name: threshold
+           summary: A numeric value from configured minimum
+           unit: "%"
+           type: float
+           range: [0, 1000]
+           value: 420
      labels:
         service: postgresql
         runbook: {{ pmm_alerting_runbook_path }}#PostgresqlTransactionDuration
