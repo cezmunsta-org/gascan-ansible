@@ -108,7 +108,7 @@
 - ansible.builtin.include_tasks: alerting-alerts.yaml
   vars:
     pmm_alert_item: '{{ item }}'
-  loop: "{{ pmm_alert_list.rules | selectattr('name','defined') | list }}"
+  loop: "{{ pmm_alert_list | selectattr('name','defined') | list }}"
 
 - name: Delete template file
   ignore_errors: yes
