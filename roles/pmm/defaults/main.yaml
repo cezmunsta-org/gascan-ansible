@@ -44,6 +44,58 @@ pmm_alertmanager_thr_StaleBackup: 93600                           # In default i
 pmm_alertmanager_thr_StaleBackupLog: 3900                         # In default it is 65m (60*65)
 pmm_alertmanager_thr_StaleUploadLog: 3900
 
+#pmm_alert_list: {}
+pmm_alert_list:
+         { "rules":
+           [
+           {
+            "name": "DiskSpaceWarning",
+            "template_name": "DiskSpaceWarning",
+            "threshold": 30,
+            "custom_labels": {
+              "label1": "1",
+              "label2": "2"
+            },
+            "filters": [
+              {
+                "label": "env",
+                "regexp": "staging",
+                "type": "MATCH"
+              },
+              {
+                "label": "node_name",
+                "regexp": "db10",
+                "type": "MISMATCH"
+              }
+            ]
+          },
+          {
+            "name": "DiskSpaceWarning_diff_threshold",
+            "template_name": "DiskSpaceWarning",
+            "threshold": 40,
+            "filters": [
+              {
+                "label": "env",
+                "regexp": "prod",
+                "type": "MATCH"
+              },
+              {
+                "label": "node_name",
+                "regexp": "db11",
+                "type": "MISMATCH"
+              }
+            ]
+          },
+          {
+            "name": "MySQLInstanceNotAvailable",
+            "template_name": "MySQLInstanceNotAvailable"
+          },
+          {
+            "name": "VmalertAlertsError"
+          }
+           ]
+        }
+
 # Currently, only tarball client installs will be performed.
 # OS packages and containers to be added later
 pmm_client_home_dir: '{{ ansible_env.HOME }}'

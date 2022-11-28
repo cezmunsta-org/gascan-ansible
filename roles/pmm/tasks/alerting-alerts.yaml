@@ -27,13 +27,13 @@
     - name: Set params
       ansible.builtin.set_fact:
         pmm_param_name: "{{ pmm_all_templates[0]['name']}}"
-        pmm_param_float: "{{ pmm_alert_list | from_json | json_query(\"[?name==`\"+ pmm_alert_item.name +\"`].threshold\") | default(pmm_all_templates[0]['float']['default'])}}"
+        pmm_param_float: "{{ pmm_alert_list.rules | json_query(\"[?name==`\"+ pmm_alert_item.name +\"`].threshold\") | default(pmm_all_templates[0]['float']['default'])}}"
         pmm_param_type: "{{ pmm_all_templates[0]['type']}}"
       when: pmm_all_templates is defined and pmm_all_templates | length > 0
 
     - name: Set Alert Filter
       ansible.builtin.set_fact:
-        pmm_alerting_filters: "{{ pmm_alert_list | from_json | json_query(\"[?name==`\"+ pmm_alert_item.name +\"`].filters\")  }}"
+        pmm_alerting_filters: "{{ pmm_alert_list.rules | json_query(\"[?name==`\"+ pmm_alert_item.name +\"`].filters\")  }}"
 
     - name: Create alerts
       ansible.builtin.uri:

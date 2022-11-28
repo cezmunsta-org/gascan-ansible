@@ -31,57 +31,6 @@ pmm_setup_alerting: true
 pmm_delete_alert_rules: false
 notification_services: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
 
-pmm_alert_list: []
-#pmm_alert_list: |
-#    [
-#      {
-#        "name": "DiskSpaceWarning",
-#        "template_name": "DiskSpaceWarning",
-#        "threshold": 30,
-#        "custom_labels": {
-#          "label1": "1",
-#          "label2": "2"
-#        },
-#        "filters": [
-#          {
-#            "label": "env",
-#            "regexp": "staging",
-#            "type": "MATCH"
-#          },
-#          {
-#            "label": "node_name",
-#            "regexp": "db10",
-#            "type": "MISMATCH"
-#          }
-#        ]
-#      },
-#      {
-#        "name": "DiskSpaceWarning_diff_threshold",
-#        "template_name": "DiskSpaceWarning",
-#        "threshold": 40,
-#        "filters": [
-#          {
-#            "label": "env",
-#            "regexp": "prod",
-#            "type": "MATCH"
-#          },
-#          {
-#            "label": "node_name",
-#            "regexp": "db11",
-#            "type": "MISMATCH"
-#          }
-#        ]
-#      },
-#      {
-#        "name": "MySQLInstanceNotAvailable",
-#        "template_name": "MySQLInstanceNotAvailable"
-#      },
-#      {
-#        "name": "VmalertAlertsError"
-#      }
-#    ]
-
-
 pmm_payload_base:
    cluster: standalone
    disable_collectors: []
