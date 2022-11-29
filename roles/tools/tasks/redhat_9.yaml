@@ -1,52 +1,40 @@
 ---
-- name: Check for the percona toolkit tarball
-  ansible.builtin.stat:
-    path: "{{ tools_percona_toolkit_tmp_file }}"
-  register: tools_percona_toolkit_status
+- name: Install extra tools
+  ansible.builtin.package:
+    name: "{{ tools_packages }}"
+    state: present
+  become: yes
+  tags:
+    - sudo
 
-- block:
-  - name: Install extra tools
-    ansible.builtin.package:
-      name: "{{ tools_packages }}"
-      state: present
-    become: yes
-    tags:
-      - sudo
-  
-  - name: Ensure user bin directory exists
-    ansible.builtin.file:
-      path: "{{ tools_user_bin_dir }}"
-      state: directory
-  
-  - name: Install Percona Toolkit dependencies
-    ansible.builtin.package:
-      name: "{{ tools_percona_toolkit_dependencies }}"
-      state: present
-    become: yes
-  
-  - name: Download Percona Toolkit tarball
-    ansible.builtin.get_url:
-      url: "{{ tools_percona_toolkit_url }}"
-      dest: "{{ tools_percona_toolkit_tmp_file }}"
-      checksum: "sha256:{{ tools_percona_toolkit_sha256 }}"
-  
-  - name: Extract Percona Toolkit tarball
-    ansible.builtin.unarchive:
-      src: "{{ tools_percona_toolkit_tmp_file }}"
-      dest: "/tmp"
-      remote_src: yes
-  
-  - name: Copy Percona Toolkit files to user bin directory
-    ansible.builtin.copy:
-      src: "{{ tools_percona_toolkit_tmp_dir }}/bin/"
-      dest: "{{ tools_user_bin_dir }}"
-      remote_src: yes
-  
-  - name: Percona Toolkit install cleanup
-    ansible.builtin.file:
-      path: "{{ item }}"
-      state: absent
-    with_items:
-      - "{{ tools_percona_toolkit_tmp_dir }}"
-  when: not tools_percona_toolkit_status.stat.exists
+- name: Add percona gpg rpm key
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://www.percona.com/downloads/RPM-GPG-KEY-percona
+  become: yes
+  tags:
+    - sudo
+
+- name: Install percona-release package
+  ansible.builtin.package:
+    name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+    state: present
+  become: yes
+  tags:
+    - sudo
+
+- name: enable percona toolkit repo
+  ansible.builtin.command: "percona-release enable {{ tools_percona_toolkit_repo }}"
+  become: yes
+  tags:
+    - sudo
+
+- name: Install percona toolkit
+  ansible.builtin.package:
+    name: percona-toolkit
+    state: present
+  become: yes
+  tags:
+    - sudo
+
 ...
