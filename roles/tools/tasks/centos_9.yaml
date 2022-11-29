@@ -7,11 +7,18 @@
   tags:
     - sudo
 
+- name: Add percona gpg rpm key
+  ansible.builtin.rpm_key:
+    state: present
+    key: https://www.percona.com/downloads/RPM-GPG-KEY-percona
+  become: yes
+  tags:
+    - sudo
+
 - name: Install percona-release package
   ansible.builtin.package:
     name: https://repo.percona.com/yum/percona-release-latest.noarch.rpm
     state: present
-    disable_gpg_check: yes
   become: yes
   tags:
     - sudo
