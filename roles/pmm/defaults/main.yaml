@@ -44,6 +44,14 @@ pmm_alertmanager_thr_StaleBackup: 93600                           # In default i
 pmm_alertmanager_thr_StaleBackupLog: 3900                         # In default it is 65m (60*65)
 pmm_alertmanager_thr_StaleUploadLog: 3900
 
+pmm_enable_all_alerts_for_service: []
+# pmm_enable_all_alert_for_service: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
+pmm_enable_all_templates_for_service: []
+#pmm_enable_all_templates_for_service: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
+pmm_alerts_for_services: []
+pmm_alert_names: []
+pmm_enabled_alerts: []
+
 pmm_alert_list: []
 #pmm_alert_list:
 #  - name: DiskSpaceWarning

@@ -201,7 +201,7 @@ templates:
            summary: A percentage from configured minimum
            unit: "%"
            type: float
-           range: [0, 100]
+           range: [0, 1000000]
            value: {{ pmm_alertmanager_thr_StaleBackup }}
      labels:
         service: backup
@@ -223,7 +223,7 @@ templates:
            summary: A percentage from configured minimum
            unit: "%"
            type: float
-           range: [0, 100]
+           range: [0, 1000000]
            value: {{ pmm_alertmanager_thr_StaleUpload }}
      labels:
         service: backup
@@ -245,7 +245,7 @@ templates:
            summary: A percentage from configured minimum
            unit: "%"
            type: float
-           range: [0, 100]
+           range: [0, 1000000]
            value: {{ pmm_alertmanager_thr_StaleUploadLog }}
      labels:
         service: backup
@@ -267,7 +267,7 @@ templates:
            summary: A percentage from configured minimum
            unit: "%"
            type: float
-           range: [0, 100]
+           range: [0, 100000]
            value: {{ pmm_alertmanager_thr_StaleBackupLog }}
      labels:
         service: backup
@@ -671,7 +671,7 @@ templates:
            summary: A numeric value from configured minimum
            unit: "%"
            type: float
-           range: [0, 100]
+           range: [0, 10000]
            value: 120
      labels:
         service: mysql

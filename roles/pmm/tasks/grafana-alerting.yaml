@@ -60,6 +60,20 @@
     return_content: true
   register: pmm_get_alert_templates
 
+- name: Set alerts for service
+  ansible.builtin.set_fact:
+    pmm_alerts_for_services: "{{ pmm_alerts_for_services + (pmm_alerting_templates['templates'] | selectattr('labels.service','equalto', item ) | map(attribute='name')) }}"
+  loop: "{{ pmm_enable_all_alerts_for_service }}"
+
+- name: Create Alert list
+  ansible.builtin.set_fact:
+      pmm_alert_names: "{{ pmm_alert_names + [{'name': item | split(pmm_templates_prefix) | last}]}}"
+  loop: "{{ pmm_alerts_for_services }}"
+
+- name: Set alerts to be enabled
+  ansible.builtin.set_fact:
+      pmm_enabled_alerts: "{{ [pmm_alert_names, pmm_alert_list]| community.general.lists_mergeby('name',recursive=true) }}"
+
 - name: Set pmm_existing_alert_templates
   ansible.builtin.set_fact:
     pmm_existing_alert_templates: "{{ pmm_get_alert_templates.json | json_query('templates[*].name')}}"
@@ -71,6 +85,7 @@
 - ansible.builtin.include_tasks: alerting-templates.yaml
   vars:
     pmm_template_item: '{{ item }}'
+  when: "{{ item.labels.service in pmm_enable_all_templates_for_service}}"
   loop: "{{ pmm_alerting_templates['templates'] }}"
 
 - name: Delete Current Alert rules
@@ -108,7 +123,7 @@
 - ansible.builtin.include_tasks: alerting-alerts.yaml
   vars:
     pmm_alert_item: '{{ item }}'
-  loop: "{{ pmm_alert_list | selectattr('name','defined') | list }}"
+  loop: "{{ pmm_enabled_alerts | selectattr('name','defined') | list }}"
 
 - name: Delete template file
   ignore_errors: yes
