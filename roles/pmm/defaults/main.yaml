@@ -46,7 +46,7 @@ pmm_alertmanager_thr_StaleUploadLog: 3900
 
 pmm_setup_alerting: true
 pmm_delete_alert_rules: false
-notification_services: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
+pmm_notification_services: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
 
 pmm_enable_all_alerts_for_service: []
 # pmm_enable_all_alert_for_service: ["mysql","mongo","generic","agent","proxysql","postgresql","backup"]
