@@ -338,7 +338,7 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MySQLInstanceNotAvailable
-     expr: min(mysql_up) without (job) < 1
+     expr: sum by (service_name, node_name) (mysql_up) == bool 0
      summary: {{ pmm_templates_prefix }}MySQLInstanceNotAvailable
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
@@ -854,7 +854,7 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}MongodbInstanceNotAvailable
-     expr: mongodb_up < 1
+     expr: sum by (service_name, node_name) (mongodb_up) == bool 0
      summary: {{ pmm_templates_prefix }}MongodbInstanceNotAvailable
      version: 1
      for: {{ pmm_alertmanager_rule_periods.med_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
@@ -1083,7 +1083,7 @@ templates:
      {% endraw %}
 
    - name: {{ pmm_templates_prefix }}PostgresqlIsUp
-     expr: pg_up != 1
+     expr: sum by (service_name, node_name) (pg_up) == bool 0
      summary: {{ pmm_templates_prefix }}PostgresqlIsUp
      version: 1
      for: {{ pmm_alertmanager_rule_periods.low_interval }}{{ pmm_alertmanager_rule_periods.interval_unit }}
