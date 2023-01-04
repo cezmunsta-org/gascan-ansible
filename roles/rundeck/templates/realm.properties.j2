@@ -1,0 +1,11 @@
+# This file defines users passwords and roles for a HashUserRealm
+#
+# The format is
+#  <username>: <password>[,<rolename> ...]
+#
+# Passwords may be clear text, obfuscated or checksummed.  The class
+# org.mortbay.util.Password should be used to generate obfuscated
+# passwords or password checksums
+{% for user in rundeck_manage_users %}
+{{ user.username }}: BCRYPT:{{ user.password | password_hash('bcrypt', ((65534*65534 | random(seed=ansible_machine_id) | string)[-22:])) }},{{ user.role }}
+{% endfor %}
