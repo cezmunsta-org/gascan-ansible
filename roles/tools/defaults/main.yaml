@@ -3,7 +3,9 @@ tools_percona_toolkit_repo: pt
 
 tools_home_dir: "{{ ansible_env.HOME }}"
 
+tools_kubectl_config_file: "{{ tools_home_dir }}/.kube/config"
 tools_kubectl_configuration: ''
+tools_kubectl_envs_from_pmm: []
 tools_kubectl_required: false
 tools_kubectl_image: docker.io/bitnami/kubectl
 tools_kubectl_image_tag: 1.25
@@ -23,6 +25,9 @@ tools_mysql_install: "{{ 'mysql' in groups and groups['mysql'] | length > 0 }}"
 tools_mysql_versions:
   - 5.7
   - 8.0
+
+tools_pmm_user: "{{ pmm_admin_credentials.split(':')[0] }}"
+tools_pmm_pass: "{{ pmm_admin_credentials.split(':')[1] }}"
 
 tools_profile_path: "{{ tools_home_dir }}/.bashrc"
 

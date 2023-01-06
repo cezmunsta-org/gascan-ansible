@@ -1,0 +1,43 @@
+---
+- name: Checking for .kube config file
+  ansible.builtin.stat:
+    path: "{{ tools_kubectl_config_file }}"
+  register: tools_kubectl_config_check
+
+- name: Set tools_kubectl_env_config_file default
+  ansible.builtin.set_fact:
+    tools_kubectl_env_config_file: "{{ tools_kubectl_config_file }}"
+
+- name: Set tools_kube_config_name
+  ansible.builtin.set_fact:
+    tools_kubectl_env_config_file: "{{ tools_kubectl_config_file }}_{{ item }}"
+  when: tools_kubectl_config_check.stat.exists
+
+- name: Retrieve kube config from pmm
+  ansible.builtin.uri:
+    url: "https://{{ pmm_server_host }}:{{ pmm_server_port }}/v1/management/DBaaS/Kubernetes/Get"
+    user: "{{ tools_pmm_user }}"
+    password: "{{ tools_pmm_pass }}"
+    method: POST
+    force_basic_auth: yes
+    headers: 
+      accept: "application/json"
+      content-type: "application/json"
+    body:
+      kubernetes_cluster_name: "{{ item }}"
+    body_format: json
+    validate_certs: '{{ pmm_server_insecure }}'
+  register: tools_kubectl_from_pmm
+
+- name: Set tools_kubectl_config
+  ansible.builtin.set_fact:
+    tools_kubectl_config: "{{ tools_kubectl_from_pmm.json.kube_auth.kubeconfig }}"
+
+- name: Write kube config from pmm to file
+  ansible.builtin.copy:
+    content: "{{ tools_kubectl_config }}"
+    dest: "{{ tools_kubectl_env_config_file }}"
+    owner: "{{ ansible_env.USER }}"
+    mode: u=rw,g=r,o=
+  tags:
+    - config
