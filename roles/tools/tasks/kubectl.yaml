@@ -14,13 +14,16 @@
   tags:
     - config
 
-- name: Create kube config
-  ansible.builtin.copy:
-    content: '{{ tools_kubectl_configuration }}'
-    dest: '{{ tools_home_dir }}/.kube/config'
-    create: yes
-    owner: '{{ ansible_env.USER }}'
-    mode: u=rw,g=r,o=
+- name: Check for .kube/config
+  ansible.builtin.stat: 
+    path: "{{ tools_kubectl_config_file }}"
+  register: tools_kubectl_config_check
+  tags:
+    - config
+
+- name: Include kubectl config tasks
+  include_tasks: kubectl_config.yaml
+  when: not tools_kubectl_config_check.stat.exists
   tags:
     - config
 

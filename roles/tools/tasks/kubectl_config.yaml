@@ -1,0 +1,33 @@
+---
+- name: Create kube config if tools_kubectl_configuration defined
+  ansible.builtin.copy:
+    content: '{{ tools_kubectl_configuration }}'
+    dest: '{{ tools_kubectl_config_file }}'
+    owner: '{{ ansible_env.USER }}'
+    mode: u=rw,g=r,o=
+  when: tools_kubectl_configuration | length > 0
+
+- name: Get k8s envs from pmm-server if tools_k8s_envs_from_pmm is empty
+  block:
+    - name: Query pmm for k8s envs
+      ansible.builtin.uri:
+        url: "https://{{ pmm_server_host }}:{{ pmm_server_port }}/v1/management/DBaaS/Kubernetes/List"
+        user: "{{ tools_pmm_user }}"
+        password: "{{ tools_pmm_pass }}"
+        method: POST
+        force_basic_auth: yes
+        headers:
+          accept: "application/json"
+        validate_certs: "{{ pmm_server_insecure }}"
+      register: tools_kubectl_env_list
+
+    - name: Populate tools_k8s_envs_from_pmm
+      ansible.builtin.set_fact:
+        tools_kubectl_envs_from_pmm: "{{ tools_kubectl_envs_from_pmm + [ item.kubernetes_cluster_name ] }}"
+      with_items: "{{ tools_kubectl_env_list.json.kubernetes_clusters }}"
+  when: tools_kubectl_envs_from_pmm | length == 0
+
+- name: Include tasks to write pmm kube config to file
+  include_tasks: write_pmm_kubectl_config.yaml
+  loop: "{{ tools_kubectl_envs_from_pmm }}"
+  when: tools_kubectl_envs_from_pmm | length > 0
