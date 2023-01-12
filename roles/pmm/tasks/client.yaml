@@ -61,12 +61,12 @@
   when: pmm_client_needs_setup | default(False)
 
 # TODO: saving for later use
-# - name: Check for --pmm-agent-listen-port support
-#   ansible.builtin.command:
-#     cmd: pmm-admin --pmm-agent-listen-port=1234 --help
-#     changed_when: false
-#     failed_when:  pmm_client_check_admin_listen_port.stderr is defined and 'unknown long flag' in pmm_client_check_admin_listen_port.stderr
-#     register: pmm_client_check_admin_listen_port
+#- name: Check for --pmm-agent-listen-port support
+#  ansible.builtin.command:
+#    cmd: pmm-admin --pmm-agent-listen-port=1234 --help
+#    changed_when: false
+#    failed_when:  pmm_client_check_admin_listen_port.stderr is defined and 'unknown long flag' in pmm_client_check_admin_listen_port.stderr
+#    register: pmm_client_check_admin_listen_port
 
 - name: Manage services
   ansible.builtin.include_tasks: 'roles/pmm/tasks/client-{{ item }}.yaml'

@@ -49,41 +49,41 @@ pmm_delete_alert_rules: false
 pmm_notification_services: ["mysql", "mongo", "generic", "agent", "proxysql", "postgresql", "backup"]
 
 pmm_enable_all_alerts_for_service: []
-# pmm_enable_all_alert_for_service: ["mysql", "mongo", "generic", "agent", "proxysql", "postgresql", "backup"]
+#pmm_enable_all_alert_for_service: ["mysql", "mongo", "generic", "agent", "proxysql", "postgresql", "backup"]
 pmm_enable_all_templates_for_service: []
-# pmm_enable_all_templates_for_service: ["mysql", "mongo", "generic", "agent", "proxysql", "postgresql", "backup"]
+#pmm_enable_all_templates_for_service: ["mysql", "mongo", "generic", "agent", "proxysql", "postgresql", "backup"]
 pmm_alerts_for_services: []
 pmm_alert_names: []
 pmm_enabled_alerts: []
 
 pmm_alert_list: []
-# pmm_alert_list:
-#   - name: DiskSpaceWarning
-#     template_name: DiskSpaceWarning
-#     threshold: 30
-#     custom_labels:
-#       label1: '1'
-#       label2: '2'
-#     filters:
-#     - label: env
-#       regexp: staging
-#       type: MATCH
-#     - label: node_name
-#       regexp: db10
-#       type: MISMATCH
-#   - name: DiskSpaceWarning_diff_threshold
-#     template_name: DiskSpaceWarning
-#     threshold: 40
-#     filters:
-#     - label: env
-#       regexp: prod
-#       type: MATCH
-#     - label: node_name
-#       regexp: db11
-#       type: MISMATCH
-#   - name: MySQLInstanceNotAvailable
-#     template_name: MySQLInstanceNotAvailable
-#   - name: VmalertAlertsError
+#pmm_alert_list:
+#  - name: DiskSpaceWarning
+#    template_name: DiskSpaceWarning
+#    threshold: 30
+#    custom_labels:
+#      label1: '1'
+#      label2: '2'
+#    filters:
+#    - label: env
+#      regexp: staging
+#      type: MATCH
+#    - label: node_name
+#      regexp: db10
+#      type: MISMATCH
+#  - name: DiskSpaceWarning_diff_threshold
+#    template_name: DiskSpaceWarning
+#    threshold: 40
+#    filters:
+#    - label: env
+#      regexp: prod
+#      type: MATCH
+#    - label: node_name
+#      regexp: db11
+#      type: MISMATCH
+#  - name: MySQLInstanceNotAvailable
+#    template_name: MySQLInstanceNotAvailable
+#  - name: VmalertAlertsError
 
 # Currently, only tarball client installs will be performed.
 # OS packages and containers to be added later
@@ -114,12 +114,12 @@ pmm_container_volume: pmm-data
 pmm_deploy_using: '{{ container_engine | default("podman") }}'
 
 pmm_manage_users: []
-# - user: xxx
-#   login: xxx
-#   password: xxx | omit to avoid account creation
-#   role: Admin | Editor | Viewer
-#   is_grafana_admin: false | omit to avoid Grafana admin permissions
-#   requires_token: true | omit or set to false to skip tokens
+#- user: xxx
+#  login: xxx
+#  password: xxx | omit to avoid account creation
+#  role: Admin | Editor | Viewer
+#  is_grafana_admin: false | omit to avoid Grafana admin permissions
+#  requires_token: true | omit or set to false to skip tokens
 
 pmm_pagerduty_token: '{{ pagerduty | default("") }}'
 
