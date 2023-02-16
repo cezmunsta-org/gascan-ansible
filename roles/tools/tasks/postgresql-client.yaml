@@ -9,7 +9,7 @@
   ansible.builtin.lineinfile:
     path: '{{ tools_profile_path }}'
     create: yes
-    line: "alias psql{{ tools_postgresql_image_tag }}='podman run --rm -it --entrypoint=psql -v {{ tools_postgresql_image }}:{{ tools_postgresql_image_tag }}'"
+    line: "alias psql{{ tools_postgresql_image_tag }}='podman run --rm -it --entrypoint=psql {{ tools_postgresql_image }}:{{ tools_postgresql_image_tag }}'"
     owner: '{{ ansible_env.USER }}'
     mode: u=rw,g=r,o=
 ...
