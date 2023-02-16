@@ -24,6 +24,7 @@ tools_mysql_versions:
   - 5.7
   - 8.0
 
+tools_postgresql_conf: "{{ ansible_env.HOME }}/.pgpass"
 tools_postgresql_image: docker.io/perconalab/percona-distribution-postgresql
 tools_postgresql_install: "{{ 'postgresql' in groups and groups['postgresql'] | length > 0 }}"
 tools_postgresql_versions:
