@@ -5,6 +5,10 @@
   vars:
     container_image: '{{ tools_mongodb_image }}:{{ tools_mongodb_image_tag }}'
 
+- name: Set tools_mongodb_cli fact
+  set_fact:
+    tools_mongodb_cli: "{{ 'mongosh' if (tools_mongodb_image_tag in tools_mongodb_mongosh) else 'mongo' }}"
+
 - name: Check for tools_mongodb_conf
   ansible.builtin.stat:
     path: '{{ tools_mongodb_conf }}'
@@ -14,14 +18,14 @@
   ansible.builtin.copy:
     dest: '{{ tools_mongodb_conf }}'
     content: >
-      # This file is unmanaged
+      // This file is unmanaged
   when: not tools_stat_mongodb_conf.stat.exists
 
 - name: Add alias for MongoDB CLI
   ansible.builtin.lineinfile:
     path: '{{ tools_profile_path }}'
     create: yes
-    line: "alias mongo{{ tools_mongodb_image_tag }}='podman run --rm -it --entrypoint=mongo -v {{ tools_mongodb_conf }}:/home/mongodb/{{ tools_mongodb_conf | basename }}:z {{ tools_mongodb_image }}:{{ tools_mongodb_image_tag }}'"
+    line: "alias mongo{{ tools_mongodb_image_tag }}='podman run --rm -it --entrypoint={{ tools_mongodb_cli }} -v {{ tools_mongodb_conf }}:/home/mongodb/{{ tools_mongodb_conf | basename }}:z {{ tools_mongodb_image }}:{{ tools_mongodb_image_tag }}'"
     owner: '{{ ansible_env.USER }}'
     mode: u=rw,g=r,o=
 ...
