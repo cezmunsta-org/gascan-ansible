@@ -6,7 +6,7 @@
     container_image: '{{ tools_mongodb_image }}:{{ tools_mongodb_image_tag }}'
 
 - name: Set tools_mongodb_cli fact
-  set_fact:
+  ansible.builtin.set_fact:
     tools_mongodb_cli: "{{ 'mongosh' if (tools_mongodb_image_tag in tools_mongodb_mongosh) else 'mongo' }}"
 
 - name: Check for tools_mongodb_conf
